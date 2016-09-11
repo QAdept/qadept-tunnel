@@ -20,5 +20,5 @@
             "Qadept\\Tunnel\\":   "src/"
         }
     },
-    "bin": ["qatunnel"]
+    "bin": ["bin/qatunnel.php"]
 }
