@@ -1,17 +1,9 @@
 {
     "name": "qadept/tunnel",
     "description": "Creating a tunnel to QAdept.com for local testing",
+    "homepage":"http://qadept.com/",
     "type": "library",
-    "require": {
-        "symfony/console": ">=2.7 <4.0",
-        "symfony/process": ">=2.7 <4.0"
-    },
     "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Qadept\\Tunnel\\":   "src/"
-        }
-    },
     "authors": [
         {
             "name": "Oleg Polosin",
@@ -19,5 +11,14 @@
         }
     ],
     "minimum-stability": "stable",
-    "bin": ["bin/qatunnel"]
+    "require": {
+        "symfony/console": ">=2.7 <4.0",
+        "symfony/process": ">=2.7 <4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Qadept\\Tunnel\\":   "src/"
+        }
+    },
+    "bin": ["qatunnel"]
 }
