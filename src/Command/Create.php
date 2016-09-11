@@ -72,6 +72,7 @@ class Create extends Command
         // save key to temporary directory
         $keyPath = $this->_tmpDir . DIRECTORY_SEPARATOR . 'tunnel_key';
         file_put_contents($keyPath, $data['key']);
+        chmod($keyPath, 0600);
 
         // build SSH command to create a tunnel
         $tunnels = '';
