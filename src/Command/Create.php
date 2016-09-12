@@ -123,21 +123,18 @@ class Create extends Command
     private function _saveTunnelKey($key)
     {
         $keyPath = $nextKeyPath = $this->_tmpDir . DIRECTORY_SEPARATOR . 'tunnel_key';
-        $i = 1;
-        while (1) {
-            // file could be created by another user earlier
-            if (file_exists($nextKeyPath) && !is_writable($nextKeyPath)) {
-                // we can't rewrite it, try next file name
-                $nextKeyPath = $keyPath . '_' . $i;
-                $i++;
-                continue;
-            }
 
-            // file can be rewritten, do it
-            file_put_contents($nextKeyPath, $key);
-            chmod($keyPath, 0600);
-            break;
+        // file could be created by another user earlier
+        $i = 1;
+        while (file_exists($nextKeyPath) && !is_writable($nextKeyPath)) {
+            // we can't rewrite it, try next file name
+            $nextKeyPath = $keyPath . '_' . $i;
+            $i++;
         }
+
+        // file can be rewritten, do it
+        file_put_contents($nextKeyPath, $key);
+        chmod($nextKeyPath, 0600);
 
         return $nextKeyPath;
     }
