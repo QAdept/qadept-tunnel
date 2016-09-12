@@ -6,6 +6,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
@@ -22,7 +23,8 @@ class Create extends Command
              ->addArgument('projects', InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
                  'Names of projects for which you need to create a tunnel (separate with a space). '
                  . 'By default the command creates a tunnel for all your projects.'
-             );
+             )
+             ->addOption('host', null, InputOption::VALUE_OPTIONAL, 'Web server host', '127.0.0.1');
     }
 
     protected function initialize(InputInterface $input, OutputInterface $output)
@@ -70,16 +72,15 @@ class Create extends Command
         }
 
         // save key to temporary directory
-        $keyPath = $this->_tmpDir . DIRECTORY_SEPARATOR . 'tunnel_key';
-        file_put_contents($keyPath, $data['key']);
-        chmod($keyPath, 0600);
+        $keyPath = $this->_saveTunnelKey($data['key']);
 
         // build SSH command to create a tunnel
+        $host = $input->getOption('host');
         $tunnels = '';
         foreach ($data['ports'] as list($srcPort, $dstPort)) {
-            $tunnels .= ' -R ' . $dstPort . ':127.0.0.1:' . $srcPort;
+            $tunnels .= ' -R ' . $dstPort . ':' . $host . ':' . $srcPort;
         }
-        $command .= ' -N' . $tunnels . ' -i ' . $keyPath . ' ' . $data['user'] . '@' . $data['host'];
+        $command .= ' -N' . $tunnels . ' -i "' . $keyPath . '" ' . $data['user'] . '@' . $data['host'];
 
         // last chance to say to user that tunnel was opened
         $output->writeln('<info>Now following domains are available from QAdept:</info>');
@@ -117,6 +118,28 @@ class Create extends Command
         }
 
         return $tmpDir;
+    }
+
+    private function _saveTunnelKey($key)
+    {
+        $keyPath = $nextKeyPath = $this->_tmpDir . DIRECTORY_SEPARATOR . 'tunnel_key';
+        $i = 1;
+        while (1) {
+            // file could be created by another user earlier
+            if (file_exists($nextKeyPath) && !is_writable($nextKeyPath)) {
+                // we can't rewrite it, try next file name
+                $nextKeyPath = $keyPath . '_' . $i;
+                $i++;
+                continue;
+            }
+
+            // file can be rewritten, do it
+            file_put_contents($nextKeyPath, $key);
+            chmod($keyPath, 0600);
+            break;
+        }
+
+        return $nextKeyPath;
     }
 
     private function _getSSHCommand(OutputInterface $output)
